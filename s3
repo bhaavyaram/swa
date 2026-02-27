@@ -1,0 +1,333 @@
+============================================================
+PART 1 — CREATE S3 BUCKET + UPLOAD OBJECT + ENABLE PUBLIC
+============================================================
+------------------------------------------------------------
+STEP 1 — OPEN S3
+------------------------------------------------------------
+1) Login to AWS Management Console
+2) In search bar type:
+   S3
+3) Click:
+   Amazon S3
+4) Click:
+   Create bucket
+------------------------------------------------------------
+STEP 2 — BUCKET CONFIGURATION
+------------------------------------------------------------
+1) Bucket name:
+   my-public-bucket-123
+   (Must be globally unique)
+
+2) Region:
+   Choose nearest region
+
+------------------------------------------------------------
+STEP 3 — DISABLE BLOCK PUBLIC ACCESS (IMPORTANT)
+------------------------------------------------------------
+1) Scroll to:
+   Block Public Access settings
+2) Click:
+   Edit
+3) UNCHECK:
+   Block all public access
+4) Confirm:
+   ✔ I acknowledge that this bucket will become public
+5) Click:
+   Save changes
+
+6) Click:
+   Create bucket
+
+Bucket created.
+
+
+------------------------------------------------------------
+STEP 4 — ENABLE BUCKET ACL (PUBLIC READ)
+------------------------------------------------------------
+1) Click bucket name.
+2) Go to:
+   Permissions tab
+3) Scroll to:
+   Access Control List (ACL)
+4) Click:
+   Edit
+5) Under Public access:
+   ✔ Everyone (public access) → Read
+6) Click:
+   Save changes
+
+Bucket is now publicly readable.
+
+
+------------------------------------------------------------
+STEP 5 — UPLOAD OBJECT
+------------------------------------------------------------
+1) Go to:
+   Objects tab
+2) Click:
+   Upload
+3) Click:
+   Add files
+4) Select file (example: image.jpg)
+5) Click:
+   Upload
+
+
+------------------------------------------------------------
+STEP 6 — ENABLE OBJECT PUBLIC ACCESS
+------------------------------------------------------------
+1) Click uploaded object.
+2) Go to:
+   Permissions tab
+3) Scroll to:
+   Access Control List (ACL)
+4) Click:
+   Edit
+5) Under Public access:
+   ✔ Everyone (public access) → Read
+6) Click:
+   Save changes
+
+
+------------------------------------------------------------
+STEP 7 — VERIFY PUBLIC ACCESS
+------------------------------------------------------------
+1) Go to:
+   Objects tab
+2) Click object.
+3) Copy:
+   Object URL
+4) Open browser in Incognito mode.
+5) Paste URL.
+
+Object should open without login.
+
+
+============================================================
+PART 2 — ENABLE S3 VERSIONING
+============================================================
+
+------------------------------------------------------------
+STEP 1 — ENABLE VERSIONING
+------------------------------------------------------------
+1) Open S3.
+2) Select bucket.
+3) Go to:
+   Properties tab
+4) Scroll to:
+   Bucket Versioning
+5) Click:
+   Edit
+6) Select:
+   Enable
+7) Click:
+   Save changes
+
+Versioning enabled.
+
+
+------------------------------------------------------------
+OUTPUT SCENARIO
+------------------------------------------------------------
+
+A) Upload report.pdf
+   → Version ID automatically assigned.
+
+B) Upload report.pdf again (same name)
+   → Old version preserved.
+   → New version becomes current.
+
+C) Delete report.pdf
+   → Delete Marker created.
+   → Older versions still available under:
+     Objects → Show versions
+
+
+============================================================
+PART 3 — CROSS-REGION REPLICATION (CRR)
+============================================================
+
+PREREQUISITES:
+✔ Versioning enabled on BOTH buckets
+✔ Buckets must be in different regions
+
+
+------------------------------------------------------------
+STEP 1 — CREATE DESTINATION BUCKET
+------------------------------------------------------------
+1) Go to:
+   S3 → Create bucket
+2) Bucket name:
+   dest-crr-bucket
+3) Choose DIFFERENT region
+4) Click:
+   Create bucket
+5) Enable Versioning (same steps as above)
+
+
+------------------------------------------------------------
+STEP 2 — CREATE REPLICATION RULE
+------------------------------------------------------------
+1) Open SOURCE bucket.
+2) Go to:
+   Management tab
+3) Click:
+   Replication rules
+4) Click:
+   Create replication rule
+
+
+------------------------------------------------------------
+STEP 3 — CONFIGURE RULE
+------------------------------------------------------------
+1) Rule name:
+   academy-crr-rule
+2) Status:
+   Enabled
+3) IAM Role:
+   Select existing role → labrole
+4) Scope:
+   Apply to all objects
+
+
+------------------------------------------------------------
+STEP 4 — CHOOSE DESTINATION
+------------------------------------------------------------
+1) Select:
+   Another bucket
+2) Choose:
+   dest-crr-bucket
+3) Confirm different region
+4) Select:
+   Use AWS-managed role / default role
+5) Click:
+   Save
+
+Replication rule active.
+
+
+------------------------------------------------------------
+VERIFY CRR
+------------------------------------------------------------
+
+1) Upload new file (example: image.png) to SOURCE bucket.
+2) Open DESTINATION bucket.
+3) File appears automatically.
+4) Version ID present.
+
+Replication successful.
+
+
+============================================================
+PART 4 — STATIC WEBSITE HOSTING IN S3
+============================================================
+
+Files required:
+index.html
+error.html
+
+
+------------------------------------------------------------
+STEP 1 — CREATE BUCKET
+------------------------------------------------------------
+1) Go to:
+   S3 → Create bucket
+2) Bucket name:
+   my-static-site-bucket-123
+3) Choose region
+4) Under Block Public Access:
+   UNCHECK Block all public access
+5) Confirm acknowledgment
+6) Click:
+   Create bucket
+
+
+------------------------------------------------------------
+STEP 2 — UPLOAD WEBSITE FILES
+------------------------------------------------------------
+1) Open bucket.
+2) Go to:
+   Objects
+3) Click:
+   Upload
+4) Add files:
+   index.html
+   error.html
+5) Click:
+   Upload
+
+
+------------------------------------------------------------
+STEP 3 — ENABLE STATIC WEBSITE HOSTING
+------------------------------------------------------------
+1) Go to:
+   Properties tab
+2) Scroll to:
+   Static website hosting
+3) Click:
+   Edit
+4) Select:
+   Enable
+5) Choose:
+   Host a static website
+6) Index document:
+   index.html
+7) Error document:
+   error.html
+8) Click:
+   Save changes
+
+
+------------------------------------------------------------
+STEP 4 — ENABLE BUCKET PUBLIC ACCESS (ACL)
+------------------------------------------------------------
+1) Go to:
+   Permissions tab
+2) Scroll to:
+   Access Control List (ACL)
+3) Click:
+   Edit
+4) Under Public access:
+   ✔ Everyone → Read
+5) Save changes
+
+
+------------------------------------------------------------
+STEP 5 — ENABLE OBJECT PUBLIC ACCESS
+------------------------------------------------------------
+For index.html:
+1) Click object.
+2) Go to:
+   Permissions
+3) Edit ACL
+4) ✔ Everyone → Read
+5) Save
+
+Repeat same steps for:
+error.html
+
+
+------------------------------------------------------------
+STEP 6 — ACCESS WEBSITE
+------------------------------------------------------------
+1) Go to:
+   Properties
+2) Scroll to:
+   Static website hosting
+3) Copy:
+   Bucket website endpoint
+4) Paste into browser.
+
+index.html loads.
+
+
+------------------------------------------------------------
+STEP 7 — TEST ERROR PAGE
+------------------------------------------------------------
+1) In browser, type:
+   http://bucket-name.s3-website-region.amazonaws.com/invalid.html
+2) Press Enter.
+
+error.html page should display.
+
+Static website working successfully.
