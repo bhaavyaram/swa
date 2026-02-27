@@ -1,0 +1,133 @@
+========================================
+PART 1 — INSTALL PuTTY
+========================================
+Step 1 — Download PuTTY
+1) Open your web browser.
+2) Go to:
+https://putty.org
+3) Click: Download PuTTY
+4) You will be redirected to the PuTTY download page.
+5) Under "64-bit x86", click:
+putty-64bit-<version>-installer.msi
+6) Wait for file to download.
+7) Double click the downloaded file.
+8) Click:
+Next
+Next
+Install
+Finish
+PuTTY is now installed.
+========================================
+PART 2 — CONVERT .pem TO .ppk
+========================================
+(AWS gives .pem file. PuTTY needs .ppk file.)
+
+Step 1 — Open PuTTYgen
+
+1) Click Start Menu.
+2) Search:
+PuTTYgen
+3) Click PuTTYgen.
+4) PuTTY Key Generator window opens.
+Step 2 — Load .pem File
+1) Click Load.
+2) Bottom-right change file type:
+PuTTY Private Key Files (*.ppk)
+3) Select:
+All Files (*.*)
+4) Go to folder where mykey.pem is saved.
+5) Select:
+mykey.pem
+6) Click Open.
+7) Message appears:
+Successfully imported foreign key
+8) Click OK.
+Step 3 — Save .ppk File
+1) Click Save private key.
+2) It may ask about passphrase → Click Yes.
+3) Save file as:
+mykey.ppk
+4) Save in same folder.
+Conversion complete.
+Close PuTTYgen.
+========================================
+PART 3 — GET PUBLIC IP OF UBUNTU INSTANCE
+========================================
+1) Go to AWS Console.
+2) Click Services.
+3) Click EC2.
+4) Click Instances.
+5) Select your instance:
+Ubuntu-Server
+6) Copy:
+Public IPv4 address
+Example:
+3.110.xxx.xxx
+Keep this copied.
+========================================
+PART 4 — CONFIGURE PuTTY (IMPORTANT)
+========================================
+Step 1 — Open PuTTY
+
+1) Click Start.
+2) Search:
+PuTTY
+3) Click PuTTY.
+4) PuTTY Configuration window opens.
+
+Step 2 — Enter Host Name
+
+In "Host Name (or IP address)" box type:
+
+ubuntu@3.110.xxx.xxx
+
+(Replace with your actual Public IP.)
+
+Verify:
+Port = 22
+Connection type = SSH
+
+Step 3 — Attach .ppk File
+
+1) On left menu click:
+Connection
+2) Expand:
+SSH
+3) Click:
+Auth
+4) Click:
+Credentials
+5) Under "Private key file for authentication"
+   Click Browse.
+6) Select:
+mykey.ppk
+7) Click Open.
+
+Step 4 — Open Connection
+
+1) Click Open.
+2) First time you will see:
+PuTTY Security Alert
+3) Click Accept.
+========================================
+SSH LOGIN
+========================================
+Black terminal window opens.
+
+If it shows:
+login as:
+Type:
+ubuntu
+Press Enter.
+OR it may directly log in.
+You should see:
+ubuntu@ip-172-31-xx-xx:~$
+========================================
+VERIFY CONNECTION
+========================================
+Type:
+whoami
+Press Enter.
+Output should be:
+ubuntu
+Connection Successful.
