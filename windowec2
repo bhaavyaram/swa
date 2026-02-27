@@ -1,0 +1,91 @@
+===============================
+PART 4 — CREATE WINDOWS EC2 INSTANCE
+===============================
+1) Go to AWS Console.
+2) Click Services (top left).
+3) Click EC2.
+4) Click Launch Instance.
+--------------------------------
+Step 1 — Name the Instance
+--------------------------------
+In the "Name" field type:
+Windows-Server
+--------------------------------
+Step 2 — Choose AMI
+--------------------------------
+Under Application and OS Images:
+Select:
+Microsoft Windows Server 2022 Base
+--------------------------------
+Step 3 — Choose Instance Type
+--------------------------------
+Under Instance type:
+Select:
+t2.micro
+--------------------------------
+Step 4 — Key Pair
+--------------------------------
+Under Key pair:
+Select existing key pair:
+mykey
+(Do NOT create new unless required.)
+--------------------------------
+Step 5 — Configure Network
+--------------------------------
+In Network settings section:
+Click Edit.
+Ensure:
+Auto-assign Public IP → Enabled
+Under Security Group:
+Enable:
+Allow RDP traffic
+Verify:
+Port: 3389
+Source: My IP
+--------------------------------
+Step 6 — Launch Instance
+--------------------------------
+Click Launch Instance.
+Wait 3–5 minutes.
+Go to:
+EC2 → Instances
+Wait until:
+Instance state → Running
+Status checks → 2/2 passed
+===============================
+PART 5 — CONNECT TO WINDOWS USING RDP
+===============================
+--------------------------------
+Step 1 — Get Administrator Password
+--------------------------------
+1) Go to EC2 → Instances.
+2) Select Windows-Server.
+3) Click Connect.
+4) Select RDP Client tab.
+5) Click Get Password.
+6) Click Upload private key file.
+7) Upload: mykey.pem
+8) Click Decrypt Password.
+9) Copy the displayed password.
+--------------------------------
+Step 2 — Open Remote Desktop
+--------------------------------
+On your Windows computer:
+1) Press Windows + R
+2) Type: mstsc
+3) Press Enter
+--------------------------------
+Step 3 — Login
+--------------------------------
+In the Remote Desktop window:
+Computer:
+<Public-IP-of-Windows-instance>
+Click Connect.
+Username:
+Administrator
+Password:
+Paste the decrypted password.
+Click OK.
+--------------------------------
+Windows Desktop opens.
+RDP Connection Successful.
