@@ -1,0 +1,162 @@
+WEEK-2 – TASK 3
+Create Snapshot of EBS Volume and Use It in Another AWS Region
+------------------------------------------------------------
+OBJECTIVE
+------------------------------------------------------------
+To create a snapshot of an existing EBS volume, copy it to another AWS region,
+create a new volume from it, and attach it to an EC2 instance in that region.
+------------------------------------------------------------
+STEP 1: Create a Snapshot of Existing EBS Volume
+------------------------------------------------------------
+1. Sign in to AWS Management Console
+2. Go to EC2 → Volumes
+3. Select the EBS volume you want to back up
+4. Click Actions → Create Snapshot
+5. Enter:
+   - Name
+   - Description
+6. Click Create Snapshot
+Go to EC2 → Snapshots
+Wait until:
+Status = Completed
+------------------------------------------------------------
+STEP 2: Copy Snapshot to Another Region
+------------------------------------------------------------
+1. In EC2 → Snapshots
+2. Select the snapshot
+3. Click Actions → Copy Snapshot
+4. Choose Destination Region 
+   (Example: from ap-south-1 to us-east-1)
+5. Click Copy Snapshot
+
+Wait until:
+Status = Completed in destination region
+
+------------------------------------------------------------
+STEP 3: Switch to Destination Region
+------------------------------------------------------------
+
+1. In top-right corner of AWS Console
+2. Change region to the destination region
+   (Example: us-east-1)
+
+------------------------------------------------------------
+STEP 4: Create Volume from Copied Snapshot
+------------------------------------------------------------
+
+1. Go to EC2 → Snapshots
+2. Select the copied snapshot
+3. Click Actions → Create Volume
+4. Choose:
+   - Volume type (gp3)
+   - Size (auto-filled from snapshot)
+   - Availability Zone (same AZ as target EC2 instance)
+5. Click Create Volume
+
+Go to EC2 → Volumes
+
+Wait until:
+State = Available
+
+------------------------------------------------------------
+STEP 5: Create EC2 Instance in Destination Region
+------------------------------------------------------------
+
+If not already created:
+
+1. Go to EC2 → Launch Instance
+2. Choose Ubuntu AMI
+3. Select instance type
+4. Choose key pair
+5. Launch instance
+
+Wait until:
+Instance State = Running
+Status Checks = 2/2 passed
+
+------------------------------------------------------------
+STEP 6: Attach New Volume to EC2
+------------------------------------------------------------
+
+1. Go to EC2 → Volumes
+2. Select the newly created volume
+3. Click Actions → Attach Volume
+4. Select the new EC2 instance
+5. Device name → choose:
+
+   /dev/sdf
+
+Click Attach
+
+Wait until:
+State = In-use
+
+------------------------------------------------------------
+STEP 7: Connect to Destination EC2 via SSH
+------------------------------------------------------------
+
+ssh -i your-key.pem ubuntu@new-public-ip
+
+------------------------------------------------------------
+STEP 8: Verify Attached Volume
+------------------------------------------------------------
+
+Run:
+
+lsblk
+
+You will see:
+- Root disk → nvme0n1
+- Snapshot volume → nvme1n1
+
+If snapshot contained partition:
+You may see:
+
+/dev/nvme1n1p1
+
+Check filesystem:
+
+lsblk -fs
+
+------------------------------------------------------------
+STEP 9: Mount the Snapshot Volume
+------------------------------------------------------------
+
+If partition exists:
+
+sudo mkdir /mnt/recovered
+sudo mount /dev/nvme1n1p1 /mnt/recovered
+
+If no partition:
+
+sudo mount /dev/nvme1n1 /mnt/recovered
+
+Verify:
+
+df -h
+
+Check data:
+
+ls /mnt/recovered
+
+All previously stored files should be visible.
+
+------------------------------------------------------------
+IMPORTANT NOTES
+------------------------------------------------------------
+
+- Snapshots are region-specific.
+- To use in another region, you must COPY the snapshot.
+- Snapshot is stored in Amazon S3 (managed by AWS).
+- Data remains intact during cross-region migration.
+- Volume must be created in same AZ as EC2 instance.
+
+------------------------------------------------------------
+VIVA POINTS
+------------------------------------------------------------
+
+1. Snapshot is a point-in-time backup of EBS.
+2. Snapshots are incremental.
+3. Snapshot copy is required for cross-region usage.
+4. Used for disaster recovery and migration.
+5. Snapshot data is stored in S3 internally.
