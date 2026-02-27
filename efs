@@ -1,0 +1,195 @@
+====================================================
+SETUP EFS WITH TWO EC2 INSTANCES (STEP BY STEP)
+====================================================
+====================================================
+PART 1 — LAUNCH TWO EC2 INSTANCES
+====================================================
+We will create:
+Instance 1 → EFS-1 (Subnet-1a)
+Instance 2 → EFS-2 (Subnet-1b)
+------------------------------------
+STEP 1 — Open EC2 Dashboard
+------------------------------------
+1) Sign in to AWS Console.
+2) In search bar type:
+   EC2
+3) Click:
+   Amazon EC2
+4) Click:
+   Launch Instance
+------------------------------------
+STEP 2 — Configure EFS-1
+------------------------------------
+1) Instance Name:
+   EFS-1
+2) AMI:
+   Amazon Linux 2 (Important – NOT Ubuntu)
+3) Instance Type:
+   t2.micro
+4) Key Pair:
+   Select existing key:
+   EFS
+   (OR create new if required)
+5) Network Settings:
+   Click Edit
+   - VPC: Default
+   - Subnet: Subnet-1a
+   - Auto-assign Public IP: Enable
+6) Security Group:
+   Click Create New Security Group
+   Name:
+   EFS-NFS-SG
+   Add Rules:
+   Rule 1:
+   Type: SSH
+   Port: 22
+   Source: My IP
+   Rule 2:
+   Type: NFS
+   Port: 2049
+   Source: Anywhere (0.0.0.0/0)
+7) Click:
+   Launch Instance
+Wait until:
+Instance state → Running
+Status checks → 2/2 passed
+------------------------------------
+STEP 3 — Configure EFS-2
+------------------------------------
+Click Launch Instance again.
+Repeat SAME configuration except:
+Instance Name:
+EFS-2
+Subnet:
+Subnet-1b
+Security Group:
+Select existing:
+EFS-NFS-SG
+Click Launch Instance.
+Wait until:
+Running
+2/2 checks passed
+====================================================
+PART 2 — CREATE EFS FILE SYSTEM
+====================================================
+1) In AWS search bar type:
+   EFS
+2) Click:
+   Elastic File System
+3) Click:
+   Create file system
+------------------------------------
+STEP 1 — Basic Settings
+------------------------------------
+1) Name:
+   (Optional – efs-demo)
+2) VPC:
+   Default
+3) Click:
+   Customize
+Click:
+Next
+------------------------------------
+STEP 2 — Network Settings
+------------------------------------
+For each Availability Zone:
+Make sure mount targets exist for:
+Subnet-1a
+Subnet-1b
+Security Group:
+Remove default security group.
+Select:
+EFS-NFS-SG
+Click:
+Next
+Review configuration.
+Click:
+Create file system
+Wait until:
+Available
+====================================================
+PART 3 — ACCESS BOTH EC2 INSTANCES
+====================================================
+Open TWO PowerShell windows on your computer.
+------------------------------------
+FOR EFS-1
+------------------------------------
+1) Get Public IP of EFS-1 from EC2 dashboard.
+2) Connect using SSH:
+ssh -i path-to-EFS.pem ec2-user@Public-IP
+3) If prompted:
+Type:
+yes
+4) Switch to root:
+sudo su
+5) Create directory:
+mkdir efs
+6) Install EFS utilities:
+yum install -y amazon-efs-utils
+7) Verify installation (optional):
+rpm -q amazon-efs-utils
+8) List files:
+ls
+------------------------------------
+FOR EFS-2
+------------------------------------
+Repeat SAME steps:
+ssh -i path-to-EFS.pem ec2-user@Public-IP-of-EFS-2
+Then:
+sudo su
+mkdir efs
+yum install -y amazon-efs-utils
+ls
+====================================================
+PART 4 — ATTACH (MOUNT) EFS TO BOTH INSTANCES
+====================================================
+1) Go to:
+   EFS service
+2) Click your file system.
+3) Click:
+   Attach
+4) Select:
+   Mount via DNS
+5) Copy the mount command shown.
+It will look like:
+mount -t efs fs-xxxx:/ /efs
+------------------------------------
+MOUNT ON EFS-1
+------------------------------------
+In EFS-1 PowerShell:
+cd /efs
+Paste mount command.
+Press Enter.
+------------------------------------
+MOUNT ON EFS-2
+------------------------------------
+In EFS-2 PowerShell:
+cd /efs
+Paste same mount command.
+Press Enter.
+====================================================
+PART 5 — VERIFY AND TEST
+====================================================
+------------------------------------
+On EFS-1
+------------------------------------
+cd /efs
+Create file:
+touch testfile.txt
+Check:
+ls
+------------------------------------
+On EFS-2
+------------------------------------
+cd /efs
+Type:
+ls
+You should see:
+testfile.txt
+====================================================
+SUCCESS
+====================================================
+If file created in EFS-1 appears in EFS-2,
+EFS is working correctly.
+Both EC2 instances are sharing the same
+Elastic File System
