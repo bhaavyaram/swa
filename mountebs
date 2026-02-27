@@ -1,0 +1,143 @@
+WEEK-2 – TASK 2
+Attach and Permanently Mount an EBS Volume to Ensure Data Persistence
+------------------------------------------------------------
+STEP 1: Create an EBS Volume
+------------------------------------------------------------
+1. Log in to AWS Management Console
+2. Go to EC2 → Volumes
+3. Click Create volume
+4. Choose:
+   - Volume type: gp3
+   - Size: 20 GB (example)
+   - Availability Zone: SAME as EC2 instance
+5. Click Create volume
+Wait until:
+State = Available
+------------------------------------------------------------
+STEP 2: Attach the EBS Volume
+------------------------------------------------------------
+1. Select the new volume
+2. Click Actions → Attach volume
+3. Select your EC2 instance
+4. Device name → choose:
+
+   /dev/sdf
+
+NOTE:
+Inside Ubuntu, this will appear as:
+   /dev/nvme1n1
+5. Click Attach
+Wait until:
+State = In-use
+------------------------------------------------------------
+STEP 3: Connect to EC2 via SSH
+------------------------------------------------------------
+ssh -i your-key.pem ubuntu@your-public-ip
+------------------------------------------------------------
+STEP 4: Verify Attached Disk
+------------------------------------------------------------
+Run:
+lsblk
+You will see:
+- Root disk: nvme0n1
+- New disk:  nvme1n1 (no partition)
+Check filesystem info:
+lsblk -fs
+------------------------------------------------------------
+STEP 5: Create Partition on New Disk
+------------------------------------------------------------
+
+sudo fdisk /dev/nvme1n1
+
+Inside fdisk:
+
+Press n  → New partition
+Press Enter → Default partition number
+Press Enter → Default first sector
+Press Enter → Default last sector (use full disk)
+Press w  → Write and exit
+
+Then run:
+
+sudo partprobe
+
+------------------------------------------------------------
+STEP 6: Verify Partition Created
+------------------------------------------------------------
+
+lsblk
+
+You should now see:
+/dev/nvme1n1p1
+------------------------------------------------------------
+STEP 7: Format the Partition (XFS)
+------------------------------------------------------------
+If mkfs.xfs command is not found, install first:
+sudo apt update
+sudo apt install xfsprogs -y
+Now format:
+sudo mkfs.xfs /dev/nvme1n1p1
+Verify:
+lsblk -fs
+------------------------------------------------------------
+STEP 8: Create Mount Directory
+------------------------------------------------------------
+sudo mkdir /mnt/archana
+------------------------------------------------------------
+STEP 9: Mount the Volume
+------------------------------------------------------------
+sudo mount /dev/nvme1n1p1 /mnt/archana
+Verify:
+df -h
+------------------------------------------------------------
+STEP 10: Make Mount Permanent (fstab)
+------------------------------------------------------------
+Get UUID:
+sudo blkid /dev/nvme1n1p1
+Example output:
+UUID="abcd-1234-xyz-5678"
+Edit fstab:
+sudo nano /etc/fstab
+Add this line at the end:
+UUID=abcd-1234-xyz-5678  /mnt/archana  xfs  defaults,nofail  0  0
+Save and exit.
+Test fstab entry:
+sudo mount -a
+If no error appears, it is correct.
+Create test file:
+cd /mnt/archana
+sudo touch testfile1
+------------------------------------------------------------
+STEP 11: Verify Persistence After Reboot
+------------------------------------------------------------
+Reboot instance:
+sudo reboot
+Reconnect via SSH:
+ssh -i your-key.pem ubuntu@your-public-ip
+Check mount
+df -h
+The volume should automatically mount on /mnt/archana.
+------------------------------------------------------------
+STEP 12: Detach and Reattach (Data Recovery Scenario)
+------------------------------------------------------------
+Detach Volume:
+EC2 → Volumes → Select volume
+Actions → Detach volume
+Attach to another EC2 instance (same AZ)
+On new instance:
+ssh -i your-key.pem ubuntu@new-public-ip
+Create mount directory:
+sudo mkdir /mnt/archana
+Mount existing partition:
+sudo mount /dev/nvme1n1p1 /mnt/archana
+Check:
+ls /mnt/archana
+All previously stored files will be available.
+------------------------------------------------------------
+IMPORTANT NOTES
+------------------------------------------------------------
+- Volume must be in same Availability Zone.
+- Use UUID in /etc/fstab (not device name).
+- Use 'nofail' to prevent boot failure.
+- EBS provides persistent storage.
+- Data remains even after instance stop or detach.
