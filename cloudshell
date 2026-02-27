@@ -1,0 +1,152 @@
+========================================
+CONNECTING TO EC2 USING AWS CLOUDSHELL
+(CORRECT PROCEDURE – STEP BY STEP)
+========================================
+========================================
+PART 1 — MAKE SURE EC2 INSTANCE EXISTS
+========================================
+If instance already created → Skip this part.
+If not:
+1) Login to AWS Console.
+2) In the search bar type:
+   EC2
+3) Click:
+   Amazon EC2
+4) Click:
+   Launch Instance
+Configure:
+5) AMI:
+   Ubuntu Server 22.04 LTS
+6) Instance type:
+   t2.micro
+7) Key pair:
+   Create new
+   Name: mykey
+   Format: .pem
+8) Network settings:
+   Allow SSH
+   Port 22
+   Source: My IP
+9) Click:
+   Launch Instance
+Wait until:
+Instance state → Running
+Status checks → 2/2 passed
+Instance ready.
+========================================
+PART 2 — OPEN AWS CLOUDSHELL
+========================================
+
+1) Stay in AWS Console.
+2) Look at top-right corner.
+3) Click terminal icon:
+   >_
+4) AWS CloudShell opens.
+5) Wait 10–20 seconds.
+
+You will see terminal like:
+
+cloudshell-user@ip-xxx:~$
+
+You are now inside CloudShell.
+
+
+========================================
+PART 3 — TRY SSH (IT WILL FAIL FIRST)
+========================================
+
+Step 1 — Get SSH Command
+
+1) Go to:
+   EC2 → Instances
+2) Select your Ubuntu instance.
+3) Click:
+   Connect
+4) Click:
+   SSH client tab
+5) Copy full SSH command.
+
+Example:
+ssh -i "mykey.pem" ubuntu@3.110.xxx.xxx
+
+
+Step 2 — Paste in CloudShell
+
+1) Go back to CloudShell tab.
+2) Right-click → Paste
+   OR
+   Press Ctrl + Shift + V
+3) Press Enter.
+
+You will see error:
+
+No such file or directory
+OR
+Identity file mykey.pem not accessible
+THIS IS NORMAL.
+Reason:
+.pem file is not inside CloudShell yet.
+========================================
+PART 4 — UPLOAD .pem FILE TO CLOUDSHELL
+========================================
+Step 1 — Upload File
+1) Inside CloudShell window,
+   click:
+   Actions (top-right of CloudShell panel)
+2) Click:
+   Upload file
+3) Select:
+   mykey.pem
+4) Click:
+   Open
+File uploads.
+Step 2 — Confirm File Exists
+
+1) In CloudShell type:
+   ls
+2) Press Enter.
+
+You should see:
+mykey.pem
+
+If visible → Good.
+========================================
+PART 5 — FIX PERMISSION (VERY IMPORTANT)
+========================================
+
+1) Type:
+   chmod 400 mykey.pem
+2) Press Enter.
+No output means success.
+========================================
+PART 6 — CONNECT SUCCESSFULLY
+========================================
+
+1) Go back to:
+   EC2 → Connect → SSH Client
+2) Copy SSH command again.
+
+Example:
+ssh -i "mykey.pem" ubuntu@3.110.xxx.xxx
+3) Paste into CloudShell.
+4) Press Enter.
+If prompted:
+Are you sure you want to continue connecting (yes/no)?
+Type:
+yes
+Press Enter.
+========================================
+SUCCESS
+========================================
+You will now see:
+ubuntu@ip-172-31-xx-xx:~$
+You are connected via AWS CloudShell.
+========================================
+VERIFY CONNECTION
+========================================
+Type:
+whoami
+Press Enter.
+Output:
+ubuntu
+Connection successful.
