@@ -1,0 +1,135 @@
+WEEK-2 – PART A
+Create and Attach an EBS Volume to an EC2 Instance
+------------------------------------------------------------
+STEP 1: Check Availability Zone
+------------------------------------------------------------
+1. Go to EC2 → Instances
+2. Select your running instance
+3. Note the Availability Zone (example: ap-south-1a)
+IMPORTANT:
+The EBS volume must be created in the SAME Availability Zone
+as the EC2 instance.
+------------------------------------------------------------
+STEP 2: Create a New EBS Volume
+------------------------------------------------------------
+1. Go to EC2 → Volumes
+2. Click Create Volume
+3. Select:
+   - Volume Type → gp3
+   - Size → (example: 100 GiB or as required)
+   - Availability Zone → SAME as instance
+4. Click Create Volume
+Wait until:
+State = Available
+------------------------------------------------------------
+STEP 3: Attach the Volume to EC2
+------------------------------------------------------------
+1. Select the newly created volume
+2. Click Actions → Attach Volume
+3. Select your EC2 instance
+4. In Device Name dropdown choose:
+   /dev/sdf
+NOTE:
+- You will NOT see /dev/xvdf
+- In Ubuntu, /dev/sdf appears as /dev/nvme1n1
+5. Click Attach
+Wait until:
+State = In-use
+------------------------------------------------------------
+STEP 4: Connect to the EC2 Instance
+------------------------------------------------------------
+Use SSH to connect:
+   ssh -i your-key.pem ubuntu@your-public-ip
+After login, you will see:
+   ubuntu@ip-xxx-xx-xx-xx:~$
+------------------------------------------------------------
+STEP 5: Verify the Attached Disk
+------------------------------------------------------------
+Run:
+   lsblk
+You will see something like:
+   nvme0n1  → 8G   (root disk)
+   nvme1n1  → 100G (NEW EBS volume)
+Your new EBS volume is:
+   /dev/nvme1n1
+------------------------------------------------------------
+STEP 6: Format the EBS Volume
+------------------------------------------------------------
+New volumes are empty, so format it:
+   sudo mkfs -t ext4 /dev/nvme1n1
+Wait until formatting completes successfully.
+------------------------------------------------------------
+STEP 7: Create a Mount Directory
+------------------------------------------------------------
+Create a folder to mount the volume:
+   sudo mkdir /data
+------------------------------------------------------------
+STEP 8: Mount the Volume
+------------------------------------------------------------
+   sudo mount /dev/nvme1n1 /data
+No output means successful mounting.
+------------------------------------------------------------
+STEP 9: Verify the Mount
+------------------------------------------------------------
+Run:
+   df -h
+You should see:
+   /dev/nvme1n1 mounted on /data
+This confirms the EBS volume is successfully
+created, attached, formatted, and mounted.
+WEEK-2 – PART B
+Increase CPU and RAM by Changing EC2 Instance Type
+------------------------------------------------------------
+STEP 1: Note Current Instance Configuration (Before Scaling)
+------------------------------------------------------------
+1. Go to EC2 → Instances
+2. Select your instance
+3. Note:
+   - Current Instance Type (example: t2.micro)
+   - Availability Zone
+4. SSH into the instance:
+   ssh -i your-key.pem ubuntu@your-public-ip
+5. Check current CPU:
+   lscpu
+6. Check current RAM:
+   free -h
+Note the values for comparison after scaling.
+------------------------------------------------------------
+STEP 2: Stop the EC2 Instance
+------------------------------------------------------------
+1. Go to EC2 → Instances
+2. Select your instance
+3. Click Instance State → Stop
+4. Wait until instance state becomes "Stopped"
+
+IMPORTANT:
+You cannot change instance type while it is running.
+------------------------------------------------------------
+STEP 3: Change the Instance Type
+------------------------------------------------------------
+1. Select the stopped instance
+2. Click:
+   Actions → Instance Settings → Change Instance Type
+3. Choose a higher instance type
+   Example:
+   - From t2.micro
+   - To   t2.small or t2.medium
+4. Click Apply
+This increases CPU and RAM.
+------------------------------------------------------------
+STEP 4: Start the Instance
+------------------------------------------------------------
+1. Click Instance State → Start
+2. Wait until:
+   - Instance State = Running
+   - Status Checks = 2/2 checks passed
+------------------------------------------------------------
+STEP 5: Verify Increased CPU and RAM
+------------------------------------------------------------
+1. SSH into the instance again:
+   ssh -i your-key.pem ubuntu@your-public-ip
+2. Check CPU:
+   lscpu
+3. Check RAM:
+   free -h
+You will now see increased vCPUs and increased memory.
